@@ -1,4 +1,4 @@
-package kafkalib
+package kafkaLib
 
 import (
 	"fmt"
