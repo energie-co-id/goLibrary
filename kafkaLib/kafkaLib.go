@@ -1,7 +1,7 @@
 package kafkaLib
 
 import (
-	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	kafka "github.com/confluentinc/confluent-kafka-go/v2/kafka"
 )
 
 func Producer(brokersUrl string, topic string, message string) error {
