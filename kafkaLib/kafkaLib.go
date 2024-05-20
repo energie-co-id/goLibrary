@@ -2,59 +2,97 @@ package kafkaLib
 
 import (
 	"fmt"
-	"time"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
-	kafka "github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	"github.com/IBM/sarama"
 )
 
-func Producer(brokersUrl string, topic string, message string) error {
-	p, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": brokersUrl})
+func initConfig(ClientID string) *sarama.Config {
+	// Kafka configuration
+	config := sarama.NewConfig()
+	config.ClientID = ClientID // Optional
+	config.Producer.Return.Successes = true
+
+	return config
+}
+func Producer(brokersUrl string, ClientID string, topic string, key string, value string) error {
+	config := initConfig(ClientID)
+
+	// Create Kafka producer
+	producer, err := sarama.NewSyncProducer([]string{brokersUrl}, config)
 	if err != nil {
-		panic(err)
+		log.Fatalf("Error creating Kafka producer: %v", err)
+		return err
+	}
+	defer func() {
+		if err := producer.Close(); err != nil {
+			log.Fatalf("Error closing Kafka producer: %v", err)
+		}
+	}()
+
+	// Produce messages
+	message := &sarama.ProducerMessage{
+		Topic: topic,
+		Key:   sarama.StringEncoder(key),   // Change to your Kafka topic
+		Value: sarama.StringEncoder(value), // Change to your message
+	}
+	partition, offset, err := producer.SendMessage(message)
+	if err != nil {
+		log.Printf("Error producing message: %v", err)
+		return err
+	} else {
+		log.Printf("Message sent to partition %d at offset %d", partition, offset)
 	}
 
-	err = p.Produce(&kafka.Message{
-		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-		Value:          []byte(message),
-	}, nil)
-
-	// Wait for message deliveries before shutting down
-	p.Flush(15 * 1000)
-
-	defer p.Close()
-
-	return err
+	return nil
 }
 
-func Consumer(brokersUrl string, topic string) (string, error) {
-	c, err := kafka.NewConsumer(&kafka.ConfigMap{
-		"bootstrap.servers": brokersUrl,
-		"group.id":          "myGroup",
-		"auto.offset.reset": "earliest",
-	})
+func Consumer(brokersUrl string, ClientID string, topic string, partition int32) {
+	config := initConfig(ClientID)
 
+	// Create Kafka consumer
+	consumer, err := sarama.NewConsumer([]string{brokersUrl}, config)
 	if err != nil {
-		panic(err)
+		log.Fatalf("Error creating Kafka consumer: %v", err)
 	}
-
-	c.SubscribeTopics([]string{topic}, nil)
-
-	// A signal handler or similar could be used to set this to false to break the loop.
-	run := true
-	message := ""
-	for run {
-		msg, err := c.ReadMessage(time.Second)
-		if err == nil {
-			message = string(msg.Value)
-		} else if !err.(kafka.Error).IsTimeout() {
-			// The client will automatically try to recover from all errors.
-			// Timeout is not considered an error because it is raised by
-			// ReadMessage in absence of messages.
-			fmt.Printf("Consumer error: %v (%v)\n", err, msg)
+	defer func() {
+		if err := consumer.Close(); err != nil {
+			log.Fatalf("Error closing Kafka consumer: %v", err)
 		}
+	}()
+
+	// Trap SIGINT and SIGTERM to gracefully shutdown
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+
+	// Consume messages
+	partitionConsumer, err := consumer.ConsumePartition(topic, partition, sarama.OffsetOldest)
+	if err != nil {
+		log.Fatalf("Error creating partition consumer: %v", err)
 	}
+	defer func() {
+		if err := partitionConsumer.Close(); err != nil {
+			log.Fatalf("Error closing partition consumer: %v", err)
+		}
+	}()
 
-	c.Close()
+	// Handle consumed messages
+	go func() {
+		for {
+			select {
+			case <-signals:
+				log.Printf("<-signals")
+				return
+			case message := <-partitionConsumer.Messages():
+				log.Printf("nunggu message")
+				fmt.Printf("Received message: %s\n", string(message.Value))
+			}
+		}
+	}()
 
-	return message, err
+	// Wait for termination signal
+	<-signals
 }
