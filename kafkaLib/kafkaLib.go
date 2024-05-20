@@ -18,14 +18,14 @@ func initConfig(ClientID string) *sarama.Config {
 
 	return config
 }
-func Producer(brokersUrl string, ClientID string, topic string, key string, value string) (any, error) {
+func Producer(brokersUrl string, ClientID string, topic string, key string, value string) error {
 	config := initConfig(ClientID)
 
 	// Create Kafka producer
 	producer, err := sarama.NewSyncProducer([]string{brokersUrl}, config)
 	if err != nil {
 		log.Fatalf("Error creating Kafka producer: %v", err)
-		return nil, err
+		return err
 	}
 	defer func() {
 		if err := producer.Close(); err != nil {
@@ -42,9 +42,12 @@ func Producer(brokersUrl string, ClientID string, topic string, key string, valu
 	partition, offset, err := producer.SendMessage(message)
 	if err != nil {
 		log.Printf("Error producing message: %v", err)
-		return nil, err
+		return err
+	} else {
+		log.Printf("Message sent to partition %d at offset %d", partition, offset)
 	}
-	return fmt.Sprintf("Message sent to partition %d at offset %d", partition, offset), nil
+
+	return nil
 }
 
 func Consumer(brokersUrl string, ClientID string, topic string, partition int32) {
