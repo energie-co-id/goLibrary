@@ -77,10 +77,17 @@ func PublishAndListening(publishMessage string, publishTopic string, listeningTo
 	subscribe(client, listeningTopic)
 	publish(client, publishMessage, publishTopic)
 
-	timer := 10 * 1000                                        //10 seconds in microseconds
-	for receivedMessage == "no response" && timer < 10*1000 { //wait 10 seconds for the message in range of miliseconds
-		time.Sleep(time.Millisecond)
-		timer++
+	// timer := 10 * 1000                                        //10 seconds in microseconds
+	// for receivedMessage == "no response" && timer < 10*1000 { //wait 10 seconds for the message in range of miliseconds
+	// 	time.Sleep(time.Millisecond)
+	// 	timer++
+	// }
+
+	timer := 10 * time.Second // 10 seconds
+
+	for receivedMessage == "no response" && time.Since(time.Now()) < timer {
+		time.Sleep(time.Millisecond) // Wait for 1 millisecond
+		// Here you would normally update receivedMessage based on some condition
 	}
 
 	client.Disconnect(250)
