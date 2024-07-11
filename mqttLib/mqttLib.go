@@ -2,6 +2,7 @@ package mqttLib
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -16,7 +17,7 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
 }
 
 var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
-	fmt.Println("Connected")
+	log.Println("Connected")
 }
 
 var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
