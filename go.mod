@@ -4,6 +4,7 @@ go 1.21.6
 
 require (
 	github.com/IBM/sarama v1.43.2
+	github.com/aws/aws-sdk-go v1.54.19
 	github.com/aws/aws-sdk-go-v2 v1.30.3
 	github.com/aws/aws-sdk-go-v2/config v1.27.26
 	github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider v1.41.4
@@ -41,6 +42,7 @@ require (
 	github.com/jcmturner/gofork v1.7.6 // indirect
 	github.com/jcmturner/gokrb5/v8 v8.4.4 // indirect
 	github.com/jcmturner/rpc/v2 v2.0.3 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/klauspost/compress v1.17.8 // indirect
 	github.com/oapi-codegen/runtime v1.0.0 // indirect
 	github.com/pierrec/lz4/v4 v4.1.21 // indirect
