@@ -15,14 +15,14 @@ import (
 // 	TemplateValue string `json:"templateValue"`
 // }
 
-func PublishMessage(topicArn string, subject string, message string) {
+func PublishMessage(topicArn string, subject string, message string) (*sns.PublishOutput, error) {
 	// Create a session using shared config
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("ap-southeast-1"),
 	})
 	if err != nil {
 		fmt.Println("Error creating session:", err)
-		return
+		return nil, err
 	}
 
 	// Create SNS client
@@ -45,9 +45,8 @@ func PublishMessage(topicArn string, subject string, message string) {
 	})
 	if err != nil {
 		fmt.Println("Error publishing message:", err)
-		return
+		return result, err
 	}
 
-	// Print the message ID
-	fmt.Println("Message ID:", *result.MessageId)
+	return result, nil
 }
