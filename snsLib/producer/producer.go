@@ -1,21 +1,16 @@
 package producer
 
 import (
-	// "encoding/json"
+	"encoding/json"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/energie-co-id/goLibrary/snsLib/models"
 )
 
-// type snsMessageType struct {
-// 	From          string `json:"from"`
-// 	To            string `json:"to"`
-// 	TemplateValue string `json:"templateValue"`
-// }
-
-func PublishMessage(topicArn string, subject string, message string) (*sns.PublishOutput, error) {
+func PublishMessage(topicArn string, subject string, message models.SnsMessageType) (*sns.PublishOutput, error) {
 	// Create a session using shared config
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("ap-southeast-1"),
@@ -28,18 +23,10 @@ func PublishMessage(topicArn string, subject string, message string) (*sns.Publi
 	// Create SNS client
 	svc := sns.New(sess)
 
-	// Define the message and the topic ARN
-	// templateValueString, _ := json.Marshal(templateValue)
-	// message2 := snsMessageType{
-	// 	From:          "evgate-support@stroomer.id",
-	// 	To:            "kevin@stroomer.id",
-	// 	TemplateValue: string(templateValueString),
-	// }
-	// message2_, _ := json.Marshal(message2)
+	publishMessage, _ := json.Marshal(message)
 	// Publish the message to the SNS topic
-
 	result, err := svc.Publish(&sns.PublishInput{
-		Message:  aws.String(message),
+		Message:  aws.String(string(publishMessage)),
 		Subject:  aws.String(subject),
 		TopicArn: aws.String(topicArn),
 	})
