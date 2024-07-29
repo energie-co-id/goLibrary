@@ -10,7 +10,7 @@ type responseMessage struct {
 	Message interface{} `json:"message"`
 }
 
-func Generate(event events.APIGatewayProxyRequestContext, statusCode int, message interface{}) (events.APIGatewayProxyResponse, error) {
+func Generate(event events.APIGatewayProxyRequest, statusCode int, message interface{}) (events.APIGatewayProxyResponse, error) {
 	response, _ := json.Marshal(responseMessage{Message: message})
 	return events.APIGatewayProxyResponse{
 		Body:            string(response),
