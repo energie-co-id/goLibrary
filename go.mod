@@ -4,6 +4,7 @@ go 1.21.6
 
 require (
 	github.com/IBM/sarama v1.43.2
+	github.com/aws/aws-lambda-go v1.47.0
 	github.com/aws/aws-sdk-go v1.54.19
 	github.com/aws/aws-sdk-go-v2 v1.30.3
 	github.com/aws/aws-sdk-go-v2/config v1.27.26
