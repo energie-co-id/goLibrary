@@ -11,7 +11,11 @@ type responseMessage struct {
 }
 
 func Generate(event events.APIGatewayProxyRequest, statusCode int, message interface{}) (events.APIGatewayProxyResponse, error) {
-	response, _ := json.Marshal(responseMessage{Message: message})
+	response, err := json.Marshal(responseMessage{Message: message})
+	if err != nil {
+		return events.APIGatewayProxyResponse{}, err
+	}
+
 	return events.APIGatewayProxyResponse{
 		Body:            string(response),
 		StatusCode:      statusCode,
