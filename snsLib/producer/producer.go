@@ -1,16 +1,14 @@
 package producer
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sns"
-	"github.com/energie-co-id/goLibrary/snsLib/models"
 )
 
-func PublishMessage(topicArn string, subject string, message models.SnsMessageType) (*sns.PublishOutput, error) {
+func PublishMessage(topicArn string, subject string, message string) (*sns.PublishOutput, error) {
 	// Create a session using shared config
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("ap-southeast-1"),
@@ -22,11 +20,9 @@ func PublishMessage(topicArn string, subject string, message models.SnsMessageTy
 
 	// Create SNS client
 	svc := sns.New(sess)
-
-	publishMessage, _ := json.Marshal(message)
 	// Publish the message to the SNS topic
 	result, err := svc.Publish(&sns.PublishInput{
-		Message:  aws.String(string(publishMessage)),
+		Message:  aws.String(message),
 		Subject:  aws.String(subject),
 		TopicArn: aws.String(topicArn),
 	})
