@@ -23,7 +23,7 @@ func init() {
 	cognitoClient = cognitoidentityprovider.NewFromConfig(cfg)
 }
 
-func CreateUser(email string, password string, name string, role string, address string, coordinates string, ctx context.Context, userPoolId string) (*cognitoidentityprovider.AdminCreateUserOutput, error) {
+func CreateUser(email string, password string, userAtrributes []types.AttributeType, ctx context.Context, userPoolId string) (*cognitoidentityprovider.AdminCreateUserOutput, error) {
 	//create user cognito
 	input := &cognitoidentityprovider.AdminCreateUserInput{
 		// DesiredDeliveryMediums: []*string{
@@ -31,50 +31,9 @@ func CreateUser(email string, password string, name string, role string, address
 		// },
 		// MessageAction: aws.String("SUPPRESS"),
 		TemporaryPassword: aws.String(password),
-		UserAttributes: []types.AttributeType{
-			{
-				Name:  aws.String("name"),
-				Value: aws.String(name),
-			},
-			{
-				Name:  aws.String("email"),
-				Value: aws.String(email),
-			},
-			{
-				Name:  aws.String("email_verified"),
-				Value: aws.String("true"),
-			},
-			{
-				Name:  aws.String("custom:role"),
-				Value: aws.String(role),
-			},
-			{
-				Name:  aws.String("address"),
-				Value: aws.String(address),
-			},
-			{
-				Name:  aws.String("custom:EV_assign"),
-				Value: aws.String("[]"),
-			},
-			{
-				Name:  aws.String("custom:coordinates"),
-				Value: aws.String(coordinates),
-			},
-			{
-				Name:  aws.String("custom:default_limit"),
-				Value: aws.String(`{"leakage":1,"power":8000,"temperature":90}`),
-			},
-			{
-				Name:  aws.String("custom:language"),
-				Value: aws.String("en"),
-			},
-			{
-				Name:  aws.String("custom:config"),
-				Value: aws.String("null"),
-			},
-		},
-		UserPoolId: aws.String(userPoolId),
-		Username:   aws.String(email),
+		UserAttributes:    userAtrributes,
+		UserPoolId:        aws.String(userPoolId),
+		Username:          aws.String(email),
 	}
 
 	result, err := cognitoClient.AdminCreateUser(ctx, input)
@@ -150,11 +109,12 @@ func GetUser(email string, ctx context.Context, userPoolId string) (*cognitoiden
 	return result, err
 }
 
-func ListUsers(email string, ctx context.Context, userPoolId string, attributesToGet []string) (*cognitoidentityprovider.ListUsersOutput, error) {
+func ListUsers(ctx context.Context, userPoolId string, attributesToGet []string) (*cognitoidentityprovider.ListUsersOutput, error) {
 	//create user cognito
 	input := &cognitoidentityprovider.ListUsersInput{
 		UserPoolId:      aws.String(userPoolId),
 		AttributesToGet: attributesToGet,
+		// Filter:          aws.String(filter),
 	}
 
 	result, err := cognitoClient.ListUsers(ctx, input)
