@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-func DateSplitFilter(date string, dateType string, from string, to string) (finalStartTime string, finalStopTime string) {
+func DateSplitFilter(date string, dateType string, from string, to string) (finalStartTime string, finalStopTime string, err error) {
 	customTime, err := time.Parse("2006-01-02", date)
 	if err != nil {
 		customTime = time.Now()
@@ -25,15 +25,15 @@ func DateSplitFilter(date string, dateType string, from string, to string) (fina
 	default:
 		from, err := time.Parse("2006-01-02", from)
 		if err != nil {
-			return "error", "error"
+			return "error", "error", err
 		}
 		to, error := time.Parse("2006-01-02", to)
 		if error != nil {
-			return "error", "error"
+			return "error", "error", err
 		}
 		startTime = time.Date(from.Year(), from.Month(), from.Day(), -7, 0, 0, 0, from.Location())
 		stopTime = time.Date(to.Year(), to.Month(), to.Day(), 16, 59, 59, 99, to.Location())
 	}
 
-	return startTime.Format(time.RFC3339), stopTime.Format(time.RFC3339)
+	return startTime.Format(time.RFC3339), stopTime.Format(time.RFC3339), nil
 }
