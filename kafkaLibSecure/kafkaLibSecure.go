@@ -52,7 +52,7 @@ func ReadConfig(bootstrapServer string, securityProtocol string, saslMechanisms 
 
 	return m
 }
-func Produce(topic string, config kafka.ConfigMap, key string, value string) {
+func Producer(topic string, config kafka.ConfigMap, key string, value string) {
 	// creates a new producer instance
 	p, _ := kafka.NewProducer(&config)
 
@@ -84,7 +84,7 @@ func Produce(topic string, config kafka.ConfigMap, key string, value string) {
 	p.Close()
 }
 
-func Consume(topic string, config kafka.ConfigMap) {
+func Consumer(topic string, config kafka.ConfigMap) {
 	// sets the consumer group ID and offset
 	config["group.id"] = "go-group-1"
 	config["auto.offset.reset"] = "earliest"
