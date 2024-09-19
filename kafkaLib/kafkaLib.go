@@ -10,17 +10,25 @@ import (
 	"github.com/IBM/sarama"
 )
 
-func initConfig(ClientID string) *sarama.Config {
+func InitConfig(ClientID string, saslMechanism *string, saslUser *string, saslPassword *string) *sarama.Config {
 	// Kafka configuration
 	config := sarama.NewConfig()
 	config.ClientID = ClientID // Optional
+	if saslUser != nil && saslMechanism != nil && saslPassword != nil {
+		config.Net.SASL.Enable = true // Enable SASL
+		config.Net.SASL.Mechanism = sarama.SASLMechanism(*saslMechanism)
+		config.Net.SASL.User = *saslUser
+		config.Net.SASL.Password = *saslPassword
+		config.Net.TLS.Enable = true
+		// Enable TLS for secure connection if required
+		// config.Net.TLS.Config = &tls.Config{
+		// 	InsecureSkipVerify: true, // Use for testing; you can load proper certs for production
+		// }
+	}
 	config.Producer.Return.Successes = true
-
 	return config
 }
-func Producer(brokersUrl string, ClientID string, topic string, key string, value string) (string, error) {
-	config := initConfig(ClientID)
-
+func Producer(brokersUrl string, config *sarama.Config, topic string, key string, value string) (string, error) {
 	// Create Kafka producer
 	producer, err := sarama.NewSyncProducer([]string{brokersUrl}, config)
 	if err != nil {
@@ -48,8 +56,7 @@ func Producer(brokersUrl string, ClientID string, topic string, key string, valu
 	return fmt.Sprintf("Message sent to partition %d at offset %d", partition, offset), nil
 }
 
-func Consumer(brokersUrl string, ClientID string, topic string, partition int32) {
-	config := initConfig(ClientID)
+func Consumer(brokersUrl string, ClientID string, topic string, partition int32, config *sarama.Config) {
 
 	// Create Kafka consumer
 	consumer, err := sarama.NewConsumer([]string{brokersUrl}, config)
