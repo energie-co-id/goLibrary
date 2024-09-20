@@ -1,4 +1,4 @@
-package kafkaLibSecure
+package kafkaLib2
 
 import (
 	// "bufio"
