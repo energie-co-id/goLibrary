@@ -21,8 +21,8 @@ func DateSplitFilter(date string, dateType string, from string, to string) (fina
 		startTime = time.Date(customTime.Year(), customTime.Month(), customTime.Day()-7, 0, 0, 0, 0, customTime.Location())
 		stopTime = time.Date(customTime.Year(), customTime.Month(), customTime.Day(), 16, 59, 59, 99, customTime.Location())
 	case "monthly":
-		startTime = time.Date(customTime.Year(), customTime.Month(), 1, 0, 0, 0, 0, customTime.Location())
-		stopTime = time.Date(customTime.Year(), startTime.Month()+1, startTime.Day()-1, 23, 59, 59, 99, customTime.Location())
+		startTime = time.Date(customTime.Year(), customTime.Month(), -7, 0, 0, 0, 0, customTime.Location())
+		stopTime = time.Date(customTime.Year(), startTime.Month()+1, startTime.Day()-1, 16, 59, 59, 99, customTime.Location())
 	case "yearly":
 		year, err := strconv.ParseInt(date, 10, 64)
 		if err != nil {
