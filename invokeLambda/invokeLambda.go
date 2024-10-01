@@ -13,12 +13,12 @@ import (
 )
 
 type LambdaPayload struct {
-	QueryStringParameters map[string]string `json:"queryStringParameters"`
-	Body                  map[string]string `json:"body"`
-	PathParameters        map[string]string `json:"pathParameters"`
+	QueryStringParameters map[string]string      `json:"queryStringParameters"`
+	Body                  map[string]interface{} `json:"body"`
+	PathParameters        map[string]string      `json:"pathParameters"`
 }
 
-func Invoke(lambdaName string, queryStringParameters map[string]string, body map[string]string, pathParameters map[string]string) (events.APIGatewayProxyResponse, error) {
+func Invoke(lambdaName string, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("ap-southeast-1"))
 	if err != nil {
 		log.Err(err).Msg("unable to load SDK config")
@@ -26,11 +26,17 @@ func Invoke(lambdaName string, queryStringParameters map[string]string, body map
 	}
 
 	payload := LambdaPayload{
-		QueryStringParameters: queryStringParameters,
-		Body:                  body,
-		PathParameters:        pathParameters,
+		QueryStringParameters: event.QueryStringParameters,
+		// Body:                  event.Body,
+		PathParameters: event.PathParameters,
 	}
-
+	if event.Body != "" {
+		err := json.Unmarshal([]byte(event.Body), &payload.Body)
+		if err != nil {
+			log.Err(err).Msg("error unmarshal body from event")
+			return responseLib.Generate(event, 400, "Invalid Request Body")
+		}
+	}
 	payloadBytes, _ := json.Marshal(payload)
 
 	svc := lambda.NewFromConfig(cfg)
