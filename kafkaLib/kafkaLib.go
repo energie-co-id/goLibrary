@@ -2,12 +2,12 @@ package kafkaLib
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/IBM/sarama"
+	"github.com/rs/zerolog/log"
 )
 
 func InitConfig(ClientID string, saslMechanism *string, saslUser *string, saslPassword *string) *sarama.Config {
@@ -32,12 +32,12 @@ func Producer(brokersUrl string, config *sarama.Config, topic string, key string
 	// Create Kafka producer
 	producer, err := sarama.NewSyncProducer([]string{brokersUrl}, config)
 	if err != nil {
-		log.Fatalf("Error creating Kafka producer: %v", err)
+		log.Err(err).Msg("Error creating Kafka producer")
 		return "", err
 	}
 	defer func() {
 		if err := producer.Close(); err != nil {
-			log.Fatalf("Error closing Kafka producer: %v", err)
+			log.Err(err).Msg("Error closing Kafka producer")
 		}
 	}()
 
@@ -49,7 +49,7 @@ func Producer(brokersUrl string, config *sarama.Config, topic string, key string
 	}
 	partition, offset, err := producer.SendMessage(message)
 	if err != nil {
-		log.Printf("Error producing message: %v", err)
+		log.Err(err).Msg("Error producing message")
 		return "", err
 	}
 
@@ -61,11 +61,11 @@ func Consumer(brokersUrl string, ClientID string, topic string, partition int32,
 	// Create Kafka consumer
 	consumer, err := sarama.NewConsumer([]string{brokersUrl}, config)
 	if err != nil {
-		log.Fatalf("Error creating Kafka consumer: %v", err)
+		log.Err(err).Msg("Error creating Kafka consumer")
 	}
 	defer func() {
 		if err := consumer.Close(); err != nil {
-			log.Fatalf("Error closing Kafka consumer: %v", err)
+			log.Err(err).Msg("Error closing Kafka consumer")
 		}
 	}()
 
@@ -76,11 +76,11 @@ func Consumer(brokersUrl string, ClientID string, topic string, partition int32,
 	// Consume messages
 	partitionConsumer, err := consumer.ConsumePartition(topic, partition, sarama.OffsetOldest)
 	if err != nil {
-		log.Fatalf("Error creating partition consumer: %v", err)
+		log.Err(err).Msg("Error creating partition consumer")
 	}
 	defer func() {
 		if err := partitionConsumer.Close(); err != nil {
-			log.Fatalf("Error closing partition consumer: %v", err)
+			log.Err(err).Msg("Error closing partition consumer")
 		}
 	}()
 
