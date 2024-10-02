@@ -5,12 +5,13 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/IBM/sarama"
 	"github.com/rs/zerolog/log"
 )
 
-func InitConfig(ClientID string, saslMechanism *string, saslUser *string, saslPassword *string) *sarama.Config {
+func InitConfig(ClientID string, saslMechanism *string, saslUser *string, saslPassword *string, timeout int32) *sarama.Config {
 	// Kafka configuration
 	config := sarama.NewConfig()
 	config.ClientID = ClientID // Optional
@@ -20,6 +21,7 @@ func InitConfig(ClientID string, saslMechanism *string, saslUser *string, saslPa
 		config.Net.SASL.User = *saslUser
 		config.Net.SASL.Password = *saslPassword
 		config.Net.TLS.Enable = true
+		config.Net.WriteTimeout = time.Duration(timeout) * time.Second
 		// Enable TLS for secure connection if required
 		// config.Net.TLS.Config = &tls.Config{
 		// 	InsecureSkipVerify: true, // Use for testing; you can load proper certs for production
