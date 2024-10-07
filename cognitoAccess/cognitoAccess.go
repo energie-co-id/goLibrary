@@ -77,6 +77,25 @@ func UpdateUser(email string, userAttributes []types.AttributeType, ctx context.
 	return result, err
 }
 
+func EditPassword(ctx context.Context, userPoolId string, email string, password string) (*cognitoidentityprovider.AdminSetUserPasswordOutput, error) {
+	//account confirmation
+	input1 := &cognitoidentityprovider.AdminSetUserPasswordInput{
+		UserPoolId: aws.String(userPoolId),
+		Username:   aws.String(email),
+		Password:   aws.String(password),
+		Permanent:  true,
+	}
+
+	result, err := cognitoClient.AdminSetUserPassword(ctx, input1)
+	log.Println("result cognito", result)
+	if err != nil {
+		log.Println("error confirm cognito user", err)
+		return result, err
+	}
+
+	return result, err
+}
+
 func DeleteUser(email string, ctx context.Context, userPoolId string) (*cognitoidentityprovider.AdminDeleteUserOutput, error) {
 	//create user cognito
 	input := &cognitoidentityprovider.AdminDeleteUserInput{
