@@ -77,11 +77,11 @@ func UpdateUser(email string, userAttributes []types.AttributeType, ctx context.
 	return result, err
 }
 
-func EditPassword(ctx context.Context, userPoolId string, email string, password string) (*cognitoidentityprovider.AdminSetUserPasswordOutput, error) {
+func EditPassword(ctx context.Context, userPoolId string, username string, password string) (*cognitoidentityprovider.AdminSetUserPasswordOutput, error) {
 	//account confirmation
 	input1 := &cognitoidentityprovider.AdminSetUserPasswordInput{
 		UserPoolId: aws.String(userPoolId),
-		Username:   aws.String(email),
+		Username:   aws.String(username),
 		Password:   aws.String(password),
 		Permanent:  true,
 	}
