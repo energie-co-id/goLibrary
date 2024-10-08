@@ -60,12 +60,12 @@ func CreateUser(email string, password string, userAtrributes []types.AttributeT
 	return result, err
 }
 
-func UpdateUser(email string, userAttributes []types.AttributeType, ctx context.Context, userPoolId string) (*cognitoidentityprovider.AdminUpdateUserAttributesOutput, error) {
+func UpdateUser(username string, userAttributes []types.AttributeType, ctx context.Context, userPoolId string) (*cognitoidentityprovider.AdminUpdateUserAttributesOutput, error) {
 	//create user cognito
 	input := &cognitoidentityprovider.AdminUpdateUserAttributesInput{
 		UserAttributes: userAttributes,
 		UserPoolId:     aws.String(userPoolId),
-		Username:       aws.String(email),
+		Username:       aws.String(username),
 	}
 
 	result, err := cognitoClient.AdminUpdateUserAttributes(ctx, input)
@@ -96,11 +96,11 @@ func EditPassword(ctx context.Context, userPoolId string, username string, passw
 	return result, err
 }
 
-func DeleteUser(email string, ctx context.Context, userPoolId string) (*cognitoidentityprovider.AdminDeleteUserOutput, error) {
+func DeleteUser(username string, ctx context.Context, userPoolId string) (*cognitoidentityprovider.AdminDeleteUserOutput, error) {
 	//create user cognito
 	input := &cognitoidentityprovider.AdminDeleteUserInput{
 		UserPoolId: aws.String(userPoolId),
-		Username:   aws.String(email),
+		Username:   aws.String(username),
 	}
 
 	result, err := cognitoClient.AdminDeleteUser(ctx, input)
@@ -112,11 +112,11 @@ func DeleteUser(email string, ctx context.Context, userPoolId string) (*cognitoi
 	return result, err
 }
 
-func GetUser(email string, ctx context.Context, userPoolId string) (*cognitoidentityprovider.AdminGetUserOutput, error) {
+func GetUser(username string, ctx context.Context, userPoolId string) (*cognitoidentityprovider.AdminGetUserOutput, error) {
 	//create user cognito
 	input := &cognitoidentityprovider.AdminGetUserInput{
 		UserPoolId: aws.String(userPoolId),
-		Username:   aws.String(email),
+		Username:   aws.String(username),
 	}
 
 	result, err := cognitoClient.AdminGetUser(ctx, input)
