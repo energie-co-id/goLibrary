@@ -1,11 +1,13 @@
 package qryFilter
 
 import (
+	"fmt"
 	"strconv"
+	"strings"
 	"time"
 )
 
-func DateSplitFilter(date string, dateType string, from string, to string) (finalStartTime time.Time, finalStopTime time.Time, err error) {
+func DateSplit(date string, dateType string, from string, to string) (finalStartTime time.Time, finalStopTime time.Time, err error) {
 	customTime, err := time.Parse("2006-01-02", date)
 	if err != nil {
 		customTime = time.Now()
@@ -46,4 +48,21 @@ func DateSplitFilter(date string, dateType string, from string, to string) (fina
 	}
 
 	return startTime, stopTime, nil
+}
+
+func SetPageLimit(page string, limit string) (int, int) {
+	newLimit, err := strconv.Atoi(limit)
+	if err != nil {
+		newLimit = 10
+	}
+	newPage, err := strconv.Atoi(page)
+	if err != nil {
+		newPage = 1
+	}
+	return newLimit, newPage
+}
+
+func Search(fields []string, placeholder int) string {
+	operation := fmt.Sprintf(` ILIKE $%d`, placeholder)
+	return "(" + strings.Join(fields, operation+" OR ") + operation + ")"
 }
