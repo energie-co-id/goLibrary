@@ -59,7 +59,7 @@ func SetPageLimit(page string, limit string) (int, int) {
 	if err != nil {
 		newPage = 1
 	}
-	return newLimit, newPage
+	return newPage, newLimit
 }
 
 func Search(fields []string, placeholder int) string {
