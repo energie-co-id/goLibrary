@@ -13,9 +13,9 @@ import (
 )
 
 type LambdaPayload struct {
-	QueryStringParameters map[string]string      `json:"queryStringParameters"`
-	Body                  map[string]interface{} `json:"body"`
-	PathParameters        map[string]string      `json:"pathParameters"`
+	QueryStringParameters map[string]string `json:"queryStringParameters"`
+	Body                  string            `json:"body"`
+	PathParameters        map[string]string `json:"pathParameters"`
 }
 
 func Invoke(lambdaName string, queryStringParameters map[string]string, body string, pathParameters map[string]string) (events.APIGatewayProxyResponse, error) {
@@ -27,16 +27,10 @@ func Invoke(lambdaName string, queryStringParameters map[string]string, body str
 
 	payload := LambdaPayload{
 		QueryStringParameters: queryStringParameters,
-		// Body:                  body,
-		PathParameters: pathParameters,
+		Body:                  body,
+		PathParameters:        pathParameters,
 	}
-	if body != "" {
-		err := json.Unmarshal([]byte(body), &payload.Body)
-		if err != nil {
-			log.Err(err).Msg("error unmarshal body")
-			return responseLib.Generate(events.APIGatewayProxyRequest{}, 400, "Invalid Request Body")
-		}
-	}
+
 	payloadBytes, _ := json.Marshal(payload)
 
 	svc := lambda.NewFromConfig(cfg)
