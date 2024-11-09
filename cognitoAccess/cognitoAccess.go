@@ -144,3 +144,20 @@ func ListUsers(ctx context.Context, userPoolId string, attributesToGet []string)
 
 	return result, err
 }
+
+func VerifyUserAttributes(ctx context.Context, AttributeName *string, code *string, accessToken *string) (*cognitoidentityprovider.VerifyUserAttributeOutput, error) {
+	//create user cognito
+	input := &cognitoidentityprovider.VerifyUserAttributeInput{
+		AttributeName: AttributeName,
+		Code:          code,
+		AccessToken:   accessToken,
+	}
+
+	result, err := cognitoClient.VerifyUserAttribute(ctx, input)
+	if err != nil {
+		log.Println("error update cognito user", err)
+		return result, err
+	}
+
+	return result, err
+}
