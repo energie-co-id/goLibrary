@@ -87,7 +87,6 @@ func AdminEditPassword(ctx context.Context, userPoolId string, username string, 
 	}
 
 	result, err := cognitoClient.AdminSetUserPassword(ctx, input1)
-	log.Println("result cognito", result)
 	if err != nil {
 		log.Println("error confirm cognito user", err)
 		return result, err
@@ -105,7 +104,6 @@ func UserEditPassword(ctx context.Context, token string, userPoolId string, Prev
 	}
 
 	result, err := cognitoClient.ChangePassword(ctx, input1)
-	log.Println("result cognito", result)
 	if err != nil {
 		log.Println("error user edit password", err)
 		return result, err
