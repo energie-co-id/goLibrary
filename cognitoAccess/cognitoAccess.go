@@ -77,7 +77,7 @@ func UpdateUser(username string, userAttributes []types.AttributeType, ctx conte
 	return result, err
 }
 
-func EditPassword(ctx context.Context, userPoolId string, username string, password string) (*cognitoidentityprovider.AdminSetUserPasswordOutput, error) {
+func AdminEditPassword(ctx context.Context, userPoolId string, username string, password string) (*cognitoidentityprovider.AdminSetUserPasswordOutput, error) {
 	//account confirmation
 	input1 := &cognitoidentityprovider.AdminSetUserPasswordInput{
 		UserPoolId: aws.String(userPoolId),
@@ -90,6 +90,24 @@ func EditPassword(ctx context.Context, userPoolId string, username string, passw
 	log.Println("result cognito", result)
 	if err != nil {
 		log.Println("error confirm cognito user", err)
+		return result, err
+	}
+
+	return result, err
+}
+
+func UserEditPassword(ctx context.Context, token string, userPoolId string, PreviousPassword string, newPassword string) (*cognitoidentityprovider.ChangePasswordOutput, error) {
+	//account confirmation
+	input1 := &cognitoidentityprovider.ChangePasswordInput{
+		AccessToken:      aws.String(token),
+		PreviousPassword: aws.String(PreviousPassword),
+		ProposedPassword: aws.String(newPassword),
+	}
+
+	result, err := cognitoClient.ChangePassword(ctx, input1)
+	log.Println("result cognito", result)
+	if err != nil {
+		log.Println("error user edit password", err)
 		return result, err
 	}
 
@@ -145,12 +163,12 @@ func ListUsers(ctx context.Context, userPoolId string, attributesToGet []string)
 	return result, err
 }
 
-func VerifyUserAttributes(ctx context.Context, AttributeName *string, code *string, accessToken *string) (*cognitoidentityprovider.VerifyUserAttributeOutput, error) {
+func VerifyUserAttributes(ctx context.Context, AttributeName string, code string, accessToken string) (*cognitoidentityprovider.VerifyUserAttributeOutput, error) {
 	//create user cognito
 	input := &cognitoidentityprovider.VerifyUserAttributeInput{
-		AttributeName: AttributeName,
-		Code:          code,
-		AccessToken:   accessToken,
+		AttributeName: &AttributeName,
+		Code:          &code,
+		AccessToken:   &accessToken,
 	}
 
 	result, err := cognitoClient.VerifyUserAttribute(ctx, input)
