@@ -53,7 +53,7 @@ func InitializeClient(brokerURL string, port int, clientID string, username stri
 	return client
 }
 
-func MainPublish(client mqtt.Client, publishMessage string, publishTopic string) (string, error) {
+func MainPublish(client mqtt.Client, publishMessage interface{}, publishTopic string) (interface{}, error) {
 	//publish message
 	publish(client, publishMessage, publishTopic)
 
@@ -62,7 +62,7 @@ func MainPublish(client mqtt.Client, publishMessage string, publishTopic string)
 	return publishMessage, nil
 }
 
-func PublishAndListening(client mqtt.Client, publishMessage string, publishTopic string, listeningTopic string) string {
+func PublishAndListening(client mqtt.Client, publishMessage interface{}, publishTopic string, listeningTopic string) string {
 	subscribe(client, listeningTopic)
 	publish(client, publishMessage, publishTopic)
 	targetTime := 10 * time.Second // 10 seconds
