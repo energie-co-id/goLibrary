@@ -3,7 +3,6 @@ package mqttLib
 import (
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -24,7 +23,7 @@ var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err
 	fmt.Printf("Connect lost: %v", err)
 }
 
-func publish(client mqtt.Client, publishMessage string, publishTopic string) {
+func publish(client mqtt.Client, publishMessage interface{}, publishTopic string) {
 	token := client.Publish(publishTopic, 0, false, publishMessage)
 	token.Wait()
 	// time.Sleep(time.Second)
@@ -35,15 +34,13 @@ func subscribe(client mqtt.Client, topic string) {
 	fmt.Printf("Subscribed to topic: %s", topic)
 }
 
-func mqttConfig() mqtt.Client {
+func InitializeClient(brokerURL string, port int, clientID string, username string, password string) mqtt.Client {
 	//config connect to mqtt
-	var broker = os.Getenv("MQTT_URL")
-	var port = 1883
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker(fmt.Sprintf("%s:%d", broker, port))
-	opts.SetClientID("go_mqtt_client")
-	opts.SetUsername(os.Getenv("MQTT_USERNAME"))
-	opts.SetPassword(os.Getenv("MQTT_PASS"))
+	opts.AddBroker(fmt.Sprintf("%s:%d", brokerURL, port))
+	opts.SetClientID(clientID)
+	opts.SetUsername(username)
+	opts.SetPassword(password)
 	opts.SetDefaultPublishHandler(messagePubHandler)
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
@@ -56,10 +53,7 @@ func mqttConfig() mqtt.Client {
 	return client
 }
 
-func MainPublish(publishMessage string, publishTopic string) (string, error) {
-	//config connect to mqtt
-	client := mqttConfig()
-
+func MainPublish(client mqtt.Client, publishMessage string, publishTopic string) (string, error) {
 	//publish message
 	publish(client, publishMessage, publishTopic)
 
@@ -68,9 +62,7 @@ func MainPublish(publishMessage string, publishTopic string) (string, error) {
 	return publishMessage, nil
 }
 
-func PublishAndListening(publishMessage string, publishTopic string, listeningTopic string) string {
-	client := mqttConfig()
-
+func PublishAndListening(client mqtt.Client, publishMessage string, publishTopic string, listeningTopic string) string {
 	subscribe(client, listeningTopic)
 	publish(client, publishMessage, publishTopic)
 	targetTime := 10 * time.Second // 10 seconds
