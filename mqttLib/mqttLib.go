@@ -61,7 +61,7 @@ func InitializeClient(brokerURL string, port int, clientID string, username stri
 	return client
 }
 
-func MainPublish(client mqtt.Client, publishMessage interface{}, publishTopic string) (interface{}, error) {
+func MainPublish(client mqtt.Client, publishTopic string, publishMessage interface{}) (interface{}, error) {
 	//check message
 	if isMap(publishMessage) || reflect.TypeOf(publishMessage).Kind() == reflect.Struct { //if publish message type is object, we parse it to string
 		// Convert the message to JSON before publishing
@@ -79,7 +79,7 @@ func MainPublish(client mqtt.Client, publishMessage interface{}, publishTopic st
 	return publishMessage, nil
 }
 
-func PublishAndListening(client mqtt.Client, publishMessage interface{}, publishTopic string, listeningTopic string) string {
+func PublishAndListening(client mqtt.Client, publishTopic string, listeningTopic string, publishMessage interface{}) string {
 	subscribe(client, listeningTopic)
 	publish(client, publishMessage, publishTopic)
 	targetTime := 10 * time.Second // 10 seconds
