@@ -1,8 +1,10 @@
 package mqttLib
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
+	"reflect"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -21,6 +23,12 @@ var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
 
 var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
 	fmt.Printf("Connect lost: %v", err)
+}
+
+func isMap(publishMessage interface{}) bool {
+	_, ok1 := publishMessage.(map[string]interface{})
+	_, ok2 := publishMessage.(map[string]string)
+	return ok1 || ok2
 }
 
 func publish(client mqtt.Client, publishMessage interface{}, publishTopic string) {
@@ -54,6 +62,15 @@ func InitializeClient(brokerURL string, port int, clientID string, username stri
 }
 
 func MainPublish(client mqtt.Client, publishMessage interface{}, publishTopic string) (interface{}, error) {
+	//check message
+	if isMap(publishMessage) || reflect.TypeOf(publishMessage).Kind() == reflect.Struct { //if publish message type is object, we parse it to string
+		// Convert the message to JSON before publishing
+		publishMessageStr, err := json.Marshal(publishMessage)
+		if err != nil {
+			return nil, err
+		}
+		publishMessage = string(publishMessageStr)
+	}
 	//publish message
 	publish(client, publishMessage, publishTopic)
 
