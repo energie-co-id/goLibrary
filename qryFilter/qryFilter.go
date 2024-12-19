@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// DataSplit return custom time filter
 func DateSplit(date string, dateType string, from string, to string) (finalStartTime time.Time, finalStopTime time.Time, err error) {
 	customTime, err := time.Parse("2006-01-02", date)
 	if err != nil {
@@ -50,6 +51,7 @@ func DateSplit(date string, dateType string, from string, to string) (finalStart
 	return startTime, stopTime, nil
 }
 
+// SetPageLimit return current page and limit in int
 func SetPageLimit(page string, limit string) (int, int) {
 	newLimit, err := strconv.Atoi(limit)
 	if err != nil {
@@ -62,7 +64,16 @@ func SetPageLimit(page string, limit string) (int, int) {
 	return newPage, newLimit
 }
 
+// Search is return query for search value in each data
 func Search(fields []string, placeholder int) string {
 	operation := fmt.Sprintf(` ILIKE $%d`, placeholder)
 	return "(" + strings.Join(fields, operation+" OR ") + operation + ")"
+}
+
+// SortFilter is used to define custom order by
+func SortFilter(defaultSort string, sortColumn string, sortOrder string) string {
+	if sortColumn != "" && (sortOrder == "asc" || sortOrder == "desc") {
+		return sortColumn + " " + sortOrder
+	}
+	return defaultSort
 }
