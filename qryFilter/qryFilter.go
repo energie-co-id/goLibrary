@@ -72,7 +72,8 @@ func Search(fields []string, placeholder int) string {
 
 // SortFilter is used to define custom order by
 func SortFilter(defaultSort string, sortColumn string, sortOrder string) string {
-	if sortColumn != "" && (strings.ToUpper(sortOrder) == "ASC" || strings.ToUpper(sortOrder) == "desc") {
+	sortOrder = strings.ToUpper(sortOrder) // Normalize to uppercase
+	if sortColumn != "" && (sortOrder == "ASC" || sortOrder == "DESC") {
 		return sortColumn + " " + sortOrder
 	}
 	return defaultSort
