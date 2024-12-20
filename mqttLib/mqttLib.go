@@ -74,7 +74,7 @@ func MainPublish(client mqtt.Client, publishTopic string, publishMessage interfa
 	//publish message
 	publish(client, publishMessage, publishTopic)
 
-	fmt.Printf("mqtt published, topic : %s, message: %s\n", publishTopic, publishMessage)
+	fmt.Printf("mqtt published, topic : %s, message: %v\n", publishTopic, publishMessage)
 	client.Disconnect(250)
 
 	return publishMessage, nil
