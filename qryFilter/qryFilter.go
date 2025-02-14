@@ -5,13 +5,20 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/rs/zerolog/log"
 )
 
 // DataSplit return custom time filter
 func DateSplit(date string, dateType string, from string, to string) (finalStartTime time.Time, finalStopTime time.Time, err error) {
-	customTime, err := time.Parse("2006-01-02", date)
+	customTime, err := time.Parse(time.RFC3339, date)
 	if err != nil {
-		customTime = time.Now()
+		log.Err(err).Msg("Error parsing ISO8601 date, trying YYYY-MM-DD format")
+		customTime, err = time.Parse("2006-01-02", date)
+		if err != nil {
+			log.Err(err).Msg("Error parsing date")
+			customTime = time.Now()
+		}
 	}
 	var startTime time.Time
 	var stopTime time.Time
