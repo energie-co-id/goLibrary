@@ -16,8 +16,12 @@ func DateSplit(date string, dateType string, from string, to string) (finalStart
 		log.Err(err).Msg("Error parsing ISO8601 date, trying YYYY-MM-DD format")
 		customTime, err = time.Parse("2006-01-02", date)
 		if err != nil {
-			log.Err(err).Msg("Error parsing date")
-			customTime = time.Now()
+			log.Err(err).Msg("Error parsing date with format YYYY-MM-DD, trying YYYY-MM format")
+			customTime, err = time.Parse("2006-01", date)
+			if err != nil {
+				log.Err(err).Msg("Error parsing date with format YYYY-MM, will be uses now as default")
+				customTime = time.Now()
+			}
 		}
 	}
 	var startTime time.Time
