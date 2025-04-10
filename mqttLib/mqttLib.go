@@ -5,14 +5,18 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"sync"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 var receivedMessage string = "no response"
+var mu sync.Mutex
 
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
+	mu.Lock()
+	defer mu.Unlock()
 	receivedMessage = string(msg.Payload())
 	fmt.Printf("Received message: %s from topic: %s\n", msg.Payload(), msg.Topic())
 }
@@ -35,11 +39,6 @@ func publish(client mqtt.Client, publishMessage interface{}, publishTopic string
 	token := client.Publish(publishTopic, 0, false, publishMessage)
 	token.Wait()
 	// time.Sleep(time.Second)
-}
-func subscribe(client mqtt.Client, topic string) {
-	token := client.Subscribe(topic, 1, nil)
-	token.Wait()
-	fmt.Printf("Subscribed to topic: %s", topic)
 }
 
 func InitializeClient(brokerURL string, port int, clientID string, username string, password string) mqtt.Client {
@@ -80,19 +79,44 @@ func MainPublish(client mqtt.Client, publishTopic string, publishMessage interfa
 	return publishMessage, nil
 }
 
-func PublishAndListening(client mqtt.Client, publishTopic string, listeningTopic string, publishMessage interface{}) string {
-	subscribe(client, listeningTopic)
-	publish(client, publishMessage, publishTopic)
-	targetTime := 10 * time.Second // 10 seconds
-	timer := 0
-	for receivedMessage == "no response" && timer < int(targetTime) {
-		time.Sleep(time.Millisecond) // Wait for 1 millisecond
-		timer += int(time.Millisecond)
+func PublishAndListening(client mqtt.Client, publishTopic string, listeningTopic string, publishMessage interface{}, duration time.Duration) (string, error) {
+	// Marshal jika perlu
+	if isMap(publishMessage) || reflect.TypeOf(publishMessage).Kind() == reflect.Struct {
+		publishMessageStr, err := json.Marshal(publishMessage)
+		if err != nil {
+			return "", err
+		}
+		publishMessage = string(publishMessageStr)
 	}
 
-	client.Disconnect(250)
+	// Subscribe
+	token := client.Subscribe(listeningTopic, 1, messagePubHandler)
+	token.Wait()
+	if token.Error() != nil {
+		return "", fmt.Errorf("subscription error: %v", token.Error())
+	}
 
-	response := receivedMessage
-	receivedMessage = "no response"
-	return response
+	// Publish
+	publish(client, publishMessage, publishTopic)
+
+	// Ticker untuk polling
+	timeout := time.After(duration * time.Second)
+	ticker := time.NewTicker(50 * time.Millisecond)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-timeout:
+			return "no response", nil
+		case <-ticker.C:
+			mu.Lock()
+			if receivedMessage != "no response" {
+				response := receivedMessage
+				receivedMessage = "no response"
+				mu.Unlock()
+				return response, nil
+			}
+			mu.Unlock()
+		}
+	}
 }
