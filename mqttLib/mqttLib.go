@@ -11,13 +11,13 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-var receivedMessage string = "no response"
+var ReceivedMessage string = "no response"
 var mu sync.Mutex
 
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 	mu.Lock()
 	defer mu.Unlock()
-	receivedMessage = string(msg.Payload())
+	ReceivedMessage = string(msg.Payload())
 	fmt.Printf("Received message: %s from topic: %s\n", msg.Payload(), msg.Topic())
 }
 
@@ -79,7 +79,16 @@ func MainPublish(client mqtt.Client, publishTopic string, publishMessage interfa
 	return publishMessage, nil
 }
 
-func PublishAndListening(client mqtt.Client, publishTopic string, listeningTopic string, publishMessage interface{}, duration time.Duration) (string, error) {
+func containsKey(payload, key string) bool {
+	// kamu bisa gunakan logika yang lebih kompleks sesuai format payload, misalnya JSON
+	return key != "" && (len(payload) > 0 && (contains(payload, key)))
+}
+
+func contains(s, substr string) bool {
+	return len(substr) > 0 && len(s) >= len(substr) && (s == substr || len(s) > len(substr) && (contains(s[1:], substr) || s[:len(substr)] == substr))
+}
+
+func PublishAndListening(client mqtt.Client, publishTopic string, listeningTopic string, publishMessage interface{}, duration time.Duration, keyUniqueMessage *string) (string, error) {
 	// Marshal jika perlu
 	if isMap(publishMessage) || reflect.TypeOf(publishMessage).Kind() == reflect.Struct {
 		publishMessageStr, err := json.Marshal(publishMessage)
@@ -89,8 +98,23 @@ func PublishAndListening(client mqtt.Client, publishTopic string, listeningTopic
 		publishMessage = string(publishMessageStr)
 	}
 
+	// Temp variable untuk menampung response yang cocok
+	var matchedMessage string = "no response"
+
 	// Subscribe
-	token := client.Subscribe(listeningTopic, 1, messagePubHandler)
+	token := client.Subscribe(listeningTopic, 1, func(client mqtt.Client, msg mqtt.Message) {
+		payload := string(msg.Payload())
+		log.Printf("Received: %s", payload)
+
+		// Cek apakah keyUniqueMessage sesuai
+		if keyUniqueMessage != nil && !containsKey(payload, *keyUniqueMessage) {
+			return
+		}
+
+		mu.Lock()
+		matchedMessage = payload
+		mu.Unlock()
+	})
 	token.Wait()
 	if token.Error() != nil {
 		return "", fmt.Errorf("subscription error: %v", token.Error())
@@ -110,9 +134,9 @@ func PublishAndListening(client mqtt.Client, publishTopic string, listeningTopic
 			return "no response", nil
 		case <-ticker.C:
 			mu.Lock()
-			if receivedMessage != "no response" {
-				response := receivedMessage
-				receivedMessage = "no response"
+			if matchedMessage != "no response" {
+				response := matchedMessage
+				matchedMessage = "no response"
 				mu.Unlock()
 				return response, nil
 			}
